@@ -1,5 +1,9 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const LoginModel = require("../models/LoginModel");
+
+// Secret for signing JWTs (store securely in environment variables)
+const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 
 const LoginController = {
   // Controller method for user login
@@ -34,19 +38,36 @@ const LoginController = {
         return res.status(200).json({
           message: "First login. Please update your password.",
           firstLogin: true,
-          userID: user.userID
+          userID: user.userID,
         });
       }
 
-      // Success response if login is successful
+      // Generate JWT
+      const token = jwt.sign(
+        { userID: user.userID, role: user.role },
+        JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      // Define role-based redirection
+      const roleRoutes = {
+        admin: "/admin/dashboard",
+        user: "/user/home",
+        manager: "/manager/overview",
+      };
+      const redirectPage = roleRoutes[user.role] || "/";
+
+      // Success response
       res.status(200).json({
         message: "Login successful",
+        token,
+        redirectPage,
         user: {
           userID: user.userID,
           name: user.name,
           email: user.email,
-          role: user.role
-        }
+          role: user.role,
+        },
       });
     });
   },
@@ -75,7 +96,24 @@ const LoginController = {
 
       res.status(200).json({ message: "Password updated successfully" });
     });
+  },
+};
+
+// Authentication middleware
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "Access denied. No token provided." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({ message: "Invalid or expired token" });
   }
 };
 
-module.exports = LoginController;
+module.exports = { LoginController, authMiddleware };

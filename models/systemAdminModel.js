@@ -1,26 +1,61 @@
-const db = require('./db');
+const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = require('./db'); // Import your sequelize connection
 
-const SystemAdminModel = {
-  getAll: (callback) => {
-    const sql = "SELECT * FROM systemadmin";
-    db.query(sql, callback);
+// Define the SystemAdmin model
+const SystemAdmin = sequelize.define('SystemAdmin', {
+  userID: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
   },
-  update: (id, data, callback) => {
-    const sql = "UPDATE systemadmin SET name = ?, email = ?, address = ?, phone = ?, role = ? WHERE userID = ?";
-    db.query(sql, [data.name, data.email, data.address, data.phone, data.role, id], callback);
+  username: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
-  delete: (id, callback) => {
-    const sql = "DELETE FROM systemadmin WHERE userID = ?";
-    db.query(sql, [id], callback);
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
-  insert: (username, password, name, email, address, phone, role, createdAt, updatedAt, callback) => {
-    const sql = "INSERT INTO systemadmin (username, password, name, email, address, phone, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    db.query(sql, [username, password, name, email, address, phone, role, createdAt, updatedAt], callback);
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
-  getDashboardStats: (callback) => {
-    const systemAdminCountQuery = "SELECT COUNT(*) AS totalUsers FROM systemadmin";
-    db.query(systemAdminCountQuery, callback);
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
-};
+  address: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+  }
+}, {
+  tableName: 'systemadmin', // Ensure the table name matches the actual table
+  timestamps: true, // Use Sequelize's built-in timestamp management
+});
 
-module.exports = SystemAdminModel;
+// Sync the model with the database, creating the table if it doesn't exist
+sequelize.sync({ alter: true }) // Use `alter: true` to update the table structure if needed
+  .then(() => {
+    console.log("SystemAdmin table has been created or updated.");
+  })
+  .catch((err) => {
+    console.error("Error syncing the model:", err);
+  });
+
+module.exports = SystemAdmin;

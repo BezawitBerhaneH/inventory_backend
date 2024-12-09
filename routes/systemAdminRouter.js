@@ -1,12 +1,14 @@
 const express = require('express');
 const SystemAdminController = require('../controllers/systemAdminController');
+const { authMiddleware } = require('../controllers/LoginController'); // Assuming you export this from LoginController
 
 const router = express.Router();
 
-router.get('/', SystemAdminController.getAll);
-router.put('/:id', SystemAdminController.update);
-router.delete('/:id', SystemAdminController.delete);
-router.get('/dashboard', SystemAdminController.getDashboardStats);
-router.post('/create', SystemAdminController.createAdminUser);
+// Protect routes with authMiddleware
+router.get('/', authMiddleware, SystemAdminController.getAll); // Admin only
+router.put('/:id', authMiddleware, SystemAdminController.update); // Admin only
+router.delete('/:id', authMiddleware, SystemAdminController.delete); // Admin only
+router.get('/dashboard', authMiddleware, SystemAdminController.getDashboardStats); // Anyone with valid token
+router.post('/create', authMiddleware, SystemAdminController.createAdminUser); // Admin only
 
 module.exports = router;

@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -8,9 +10,19 @@ const purchaseRequestRoutes = require("./routes/purchaseRequestRoutes");
 const notificationRoutes = require('./routes/notificationRoutes');
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// CORS configuration to allow only specific IPs
+const allowedIps = ['192.168.19.199', '192.168.1.100']; // Replace with your allowed IPs
+app.use(cors({
+  origin: (origin, callback) => {
+    if (allowedIps.indexOf(origin) !== -1 || !origin) {
+      callback(null, true); // Allow the request
+    } else {
+      callback(new Error('Not allowed by CORS')); // Reject the request
+    }
+  }
+}));
 
+app.use(express.json());
 
 // Register routers
 app.use('/admin', systemAdminRouter);
@@ -21,6 +33,6 @@ app.use("/api/notifications", notificationRoutes);
 
 // Start the server
 const PORT = 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '192.168.19.199', () => {
   console.log(`Server is running on port ${PORT}`);
 });
