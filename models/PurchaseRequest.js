@@ -1,6 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('./db'); // Import your sequelize connection
-const SystemAdmin = require('./SystemAdminModel'); // Assuming you have this model defined
 
 const PurchaseRequest = sequelize.define('PurchaseRequest', {
   requestID: {
@@ -37,28 +36,9 @@ const PurchaseRequest = sequelize.define('PurchaseRequest', {
   timestamps: false,
 });
 
-// Create a new purchase request
-const createRequest = (itemDetails, quantity, deliveryRequirements, requestedBy, callback) => {
-  PurchaseRequest.create({
-    itemDetails,
-    quantity,
-    deliveryRequirements,
-    requestedBy,
-  })
-    .then(() => callback(null))
-    .catch((err) => callback(err));
-};
+// Sync the model with the database
+sequelize.sync({ alter: true })
+  .then(() => console.log("PurchaseRequest table has been created or updated."))
+  .catch((err) => console.error("Error syncing the model:", err));
 
-// Fetch all purchase requests
-const getAllRequests = (callback) => {
-  PurchaseRequest.findAll({
-    include: [{
-      model: SystemAdmin,
-      as: 'requestedBy'
-    }]
-  })
-    .then((requests) => callback(null, requests))
-    .catch((err) => callback(err));
-};
-
-module.exports = { createRequest, getAllRequests };
+module.exports = PurchaseRequest;

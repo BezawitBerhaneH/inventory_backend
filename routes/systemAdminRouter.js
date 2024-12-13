@@ -11,4 +11,7 @@ router.delete('/:id', authMiddleware, SystemAdminController.delete); // Admin on
 router.get('/dashboard', authMiddleware, SystemAdminController.getDashboardStats); // Anyone with valid token
 router.post('/create', authMiddleware, SystemAdminController.createAdminUser); // Admin only
 
+// New route to deactivate a system admin user
+router.patch('/deactivate/:id', authMiddleware, SystemAdminController.deactivate); // Admin only
+
 module.exports = router;

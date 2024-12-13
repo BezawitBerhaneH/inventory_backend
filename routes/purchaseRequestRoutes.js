@@ -10,5 +10,6 @@ router.put("/approve", purchaseRequestController.approveRequest);
 
 // Decline a purchase request
 router.put("/decline", purchaseRequestController.declineRequest);
+router.post('/purchase-request', purchaseRequestController.createRequest);
 
 module.exports = router;

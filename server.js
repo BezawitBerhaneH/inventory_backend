@@ -11,16 +11,8 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const app = express();
 
 // CORS configuration to allow only specific IPs
-const allowedIps = ['192.168.19.199', '192.168.1.100']; // Replace with your allowed IPs
-app.use(cors({
-  origin: (origin, callback) => {
-    if (allowedIps.indexOf(origin) !== -1 || !origin) {
-      callback(null, true); // Allow the request
-    } else {
-      callback(new Error('Not allowed by CORS')); // Reject the request
-    }
-  }
-}));
+app.use(cors());
+
 
 app.use(express.json());
 
@@ -30,9 +22,10 @@ app.use('/inventory', inventoryRouter);
 app.use("/api", loginRoutes);
 app.use("/api", purchaseRequestRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use('/api/roles', systemAdminRouter);
 
 // Start the server
 const PORT = 3000;
-app.listen(PORT, '192.168.19.199', () => {
+app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

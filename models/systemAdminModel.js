@@ -1,5 +1,19 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('./db'); // Import your sequelize connection
+const Role = sequelize.define('Role', {
+  roleID: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  roleName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  }
+}, {
+  tableName: 'roles', // Ensure the table name matches the actual role table
+  timestamps: false, // No timestamps for roles table
+});
 
 // Define the SystemAdmin model
 const SystemAdmin = sequelize.define('SystemAdmin', {
@@ -36,6 +50,11 @@ const SystemAdmin = sequelize.define('SystemAdmin', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  status: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'active', // Default status is 'active'
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
@@ -50,7 +69,7 @@ const SystemAdmin = sequelize.define('SystemAdmin', {
 });
 
 // Sync the model with the database, creating the table if it doesn't exist
-sequelize.sync({ alter: true }) // Use `alter: true` to update the table structure if needed
+sequelize.sync({ alter: true }) // Use alter: true to update the table structure if needed
   .then(() => {
     console.log("SystemAdmin table has been created or updated.");
   })

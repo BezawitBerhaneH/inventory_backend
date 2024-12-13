@@ -32,6 +32,9 @@ const LoginController = {
       if (!isPasswordValid) {
         return res.status(401).json({ message: "Invalid password" });
       }
+      if (user.status === "deactivated") {
+        return res.status(401).json({ message: " inactive" });
+      }
 
       // Check if it's the first login
       if (user.password === "default123") {

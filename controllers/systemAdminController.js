@@ -127,6 +127,36 @@ const SystemAdminController = {
       return res.status(500).json({ message: "Error inserting system admin data into the database" });
     }
   },
+
+  deactivate: async (req, res) => {
+    // Only allow if the logged-in user has an admin role
+    if (req.user.role !== "Admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const { id } = req.params;
+
+    try {
+      const systemAdmin = await SystemAdminModel.findByPk(id);
+
+      if (!systemAdmin) {
+        return res.status(404).json({ message: "System admin not found" });
+      }
+
+      // Check if the user is already deactivated
+      if (systemAdmin.status === "deactivated") {
+        return res.status(400).json({ message: "User is already deactivated" });
+      }
+
+      // Update the user's status to "deactivated"
+      await systemAdmin.update({ status: "deactivated" });
+
+      return res.json({ message: "System admin deactivated successfully" });
+    } catch (err) {
+      console.error("Error deactivating system admin:", err); // Detailed logging
+      return res.status(500).json({ message: "Error deactivating user" });
+    }
+  },
 };
 
 module.exports = SystemAdminController;
