@@ -78,3 +78,4 @@ sequelize.sync({ alter: true }) // Use alter: true to update the table structure
   });
 
 module.exports = SystemAdmin;
+module.exports = Role;

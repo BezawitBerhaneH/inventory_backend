@@ -157,6 +157,96 @@ const SystemAdminController = {
       return res.status(500).json({ message: "Error deactivating user" });
     }
   },
+  getAllRoles: async (req, res) => {
+    if (req.user.role !== "Admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    try {
+      const roles = await SystemAdminModel.findAll();
+      return res.json(roles);
+    } catch (err) {
+      console.error("Error fetching roles:", err);
+      return res.status(500).json({ message: "Error fetching roles" });
+    }
+  },
+
+  // Create a new role
+  createRole: async (req, res) => {
+    if (req.user.role !== "Admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const { roleName } = req.body;
+
+    if (!roleName) {
+      return res.status(400).json({ message: "Role name is required" });
+    }
+
+    try {
+      const newRole = await SystemAdminModel.create({
+        roleName,
+      });
+
+      return res.status(201).json({ message: "Role created successfully", id: newRole.roleID });
+    } catch (err) {
+      console.error("Error creating role:", err);
+      return res.status(500).json({ message: "Error creating role" });
+    }
+  },
+
+  // Update an existing role
+  updateRole: async (req, res) => {
+    if (req.user.role !== "Admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const { id } = req.params;
+    const { roleName } = req.body;
+
+    if (!roleName) {
+      return res.status(400).json({ message: "Role name is required" });
+    }
+
+    try {
+      const role = await SystemAdminModel.findByPk(id);
+
+      if (!role) {
+        return res.status(404).json({ message: "Role not found" });
+      }
+
+      await role.update({ roleName });
+
+      return res.json({ message: "Role updated successfully" });
+    } catch (err) {
+      console.error("Error updating role:", err);
+      return res.status(500).json({ message: "Error updating role" });
+    }
+  },
+
+  // Delete a role
+  deleteRole: async (req, res) => {
+    if (req.user.role !== "Admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const { id } = req.params;
+
+    try {
+      const role = await SystemAdminModel.findByPk(id);
+
+      if (!role) {
+        return res.status(404).json({ message: "Role not found" });
+      }
+
+      await role.destroy();
+
+      return res.json({ message: "Role deleted successfully" });
+    } catch (err) {
+      console.error("Error deleting role:", err);
+      return res.status(500).json({ message: "Error deleting role" });
+    }
+  },
 };
 
 module.exports = SystemAdminController;
