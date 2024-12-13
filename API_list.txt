@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 on  http://localhost:3000
 
@@ -27,3 +28,34 @@ PUT /api/requests/decline: Decline a purchase request.
 Notification Routes (/api/notifications)
 GET /api/notifications/check-empty-status: Check empty status requests and create notifications.
 GET /api/notifications/: Get all notifications.
+=======
+
+on  http://localhost:3000
+
+
+Admin Routes (/admin)           Protected by authMiddleware (needs a valid token):
+GET /admin/: Retrieve all  users.
+PUT /admin/:id: Update an  user by ID.
+DELETE /admin/:id: Delete an  user by ID.
+GET /admin/dashboard: Get dashboard statistics.
+POST /admin/create: Create a new  user.
+
+Inventory Routes (/inventory)
+GET /inventory/: Get all inventory items.
+POST /inventory/: Add a new inventory item.
+PUT /inventory/threshold/:id: Update the threshold of an inventory item by ID.
+
+
+Login Routes (/api)
+POST /api/login: Login user and receive a token.
+PUT /api/update-password: Update password (requires authMiddleware).
+
+
+Purchase Request Routes (/api/requests)
+GET /api/requests: Get all purchase requests.
+PUT /api/requests/approve: Approve a purchase request.
+PUT /api/requests/decline: Decline a purchase request.
+Notification Routes (/api/notifications)
+GET /api/notifications/check-empty-status: Check empty status requests and create notifications.
+GET /api/notifications/: Get all notifications.
+>>>>>>> 6702106d60c1dba5404e6d422cc3f2511c0005b6
