@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Protect routes with authMiddleware
 
-router.get('/', authMiddleware, SystemAdminController.getAll); // Admin only
+router.get('/users', authMiddleware, SystemAdminController.getAll); // Admin only
 router.put('/:id', authMiddleware, SystemAdminController.update); // Admin only
 router.delete('/:id', authMiddleware, SystemAdminController.delete); // Admin only
 router.get('/dashboard', authMiddleware, SystemAdminController.getDashboardStats); // Anyone with valid token

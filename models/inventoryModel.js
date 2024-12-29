@@ -1,22 +1,45 @@
-const db = require('./db');
+const { DataTypes } = require("sequelize");
+const sequelize = require("./db"); // Assuming `db` exports a Sequelize instance
 
-const InventoryModel = {
-  getAll: (callback) => {
-    const sql = "SELECT itemName, threshold FROM inventory";
-    db.query(sql, callback);
+const Inventory = sequelize.define(
+  "Inventory",
+  {
+    inventoryID: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    itemName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    typeID: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    threshold: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   },
-  add: (data, callback) => {
-    const sql = "INSERT INTO inventory (itemName, quantity, typeID, threshold) VALUES (?, ?, ?, ?)";
-    db.query(sql, [data.itemName, data.quantity, data.typeID, data.threshold], callback);
-  },
-  updateThreshold: (id, threshold, callback) => {
-    const sql = "UPDATE inventory SET threshold = ? WHERE inventoryID = ?";
-    db.query(sql, [threshold, id], callback);
-  },
-  getDashboardStats: (callback) => {
-    const inventoryCountQuery = "SELECT COUNT(*) AS activeInventoryItems FROM inventory";
-    db.query(inventoryCountQuery, callback);
-  },
-};
+  {
+    tableName: "inventory",
+    timestamps: false, // Disable timestamps if not needed
+  }
+);
 
-module.exports = InventoryModel;
+// Sync the model with the database
+sequelize
+  .sync({ alter: true }) // Updates table structure if necessary
+  .then(() => {
+    console.log("Inventory table has been created or updated.");
+  })
+  .catch((err) => {
+    console.error("Error syncing the Inventory model:", err);
+  });
+
+module.exports = Inventory;

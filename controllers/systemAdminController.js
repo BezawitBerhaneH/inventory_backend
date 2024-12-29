@@ -1,7 +1,9 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const SystemAdminModel = require("../models/SystemAdminModel");
+const supplier = require("../models/supplier");
 
+const RoleModel = require("../models/RoleModel");
 const saltRounds = 10;
 
 // Middleware to check for admin or system admin role
@@ -163,7 +165,7 @@ const SystemAdminController = {
     }
 
     try {
-      const roles = await SystemAdminModel.findAll();
+      const roles = await RoleModel.findAll();
       return res.json(roles);
     } catch (err) {
       console.error("Error fetching roles:", err);

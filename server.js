@@ -7,7 +7,7 @@ const systemAdminRouter = require('./routes/systemAdminRouter');
 const inventoryRouter = require('./routes/inventoryRouter');
 const loginRoutes = require('./routes/loginRoutes');
 const purchaseRequestRoutes = require("./routes/purchaseRequestRoutes");
-const notificationRoutes = require('./routes/notificationRoutes');
+
 const app = express();
 
 // CORS configuration to allow only specific IPs
@@ -21,7 +21,7 @@ app.use('/admin', systemAdminRouter);
 app.use('/inventory', inventoryRouter);
 app.use("/api", loginRoutes);
 app.use("/api", purchaseRequestRoutes);
-app.use("/api/notifications", notificationRoutes);
+
 app.use('/api/roles', systemAdminRouter);
 
 // Start the server
