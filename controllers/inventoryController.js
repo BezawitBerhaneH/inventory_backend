@@ -184,6 +184,79 @@ const InventoryController = {
       res.status(500).json({ message: "Error processing item request" });
     }
   },
+  getInventoryStatusDistribution: async (req, res) => {
+    // Ensure the user has the correct role
+    if (req.user.role !== "inventory admin") {
+      return res.status(403).json({ message: "Forbidden: Admin access required" });
+    }
+
+    try {
+      // Fetch all inventory items
+      const inventoryItems = await Inventory.findAll({
+        attributes: ["itemName", "quantity", "threshold"],
+      });
+
+      let inStock = 0;
+      let lowStock = 0;
+      let outOfStock = 0;
+
+      // Classify inventory items based on their stock status
+      inventoryItems.forEach(item => {
+        if (item.quantity > item.threshold) {
+          inStock++;
+        } else if (item.quantity > 0 && item.quantity <= item.threshold) {
+          lowStock++;
+        } else {
+          outOfStock++;
+        }
+      });
+
+      // Return data for pie chart or other report types
+      res.json({
+        labels: ["In Stock", "Low Stock", "Out of Stock"],
+        data: [inStock, lowStock, outOfStock]
+      });
+    } catch (err) {
+      console.error("Error fetching inventory status distribution:", err);
+      res.status(500).json({ message: "Error fetching inventory status distribution" });
+    }
+  },
+
+  // Method to get inventory usage by requests (i.e., how much of each item has been requested)
+  getInventoryUsageReport: async (req, res) => {
+    // Ensure the user has the correct role
+    if (req.user.role !== "inventory admin") {
+      return res.status(403).json({ message: "Forbidden: Admin access required" });
+    }
+
+    try {
+      // Fetch all approved internal requests (only consider requests that are 'approved')
+      const requests = await InternalRequest.findAll({
+        where: { status: "Approved" },
+        attributes: ["reqitem", "quantity"]
+      });
+
+      const usageData = {};
+
+      // Aggregate usage for each item
+      requests.forEach(request => {
+        if (usageData[request.reqitem]) {
+          usageData[request.reqitem] += request.quantity;
+        } else {
+          usageData[request.reqitem] = request.quantity;
+        }
+      });
+
+      // Format the data for the report (e.g., item names and their total usage)
+      const labels = Object.keys(usageData);
+      const data = Object.values(usageData);
+
+      res.json({ labels, data });
+    } catch (err) {
+      console.error("Error fetching inventory usage report:", err);
+      res.status(500).json({ message: "Error fetching inventory usage report" });
+    }
+  },
 };
 
 module.exports = InventoryController;
