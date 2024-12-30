@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const LoginModel = require("../models/LoginModel");
+const supplier = require("../models/supplier");
 
 // Secret for signing JWTs (store securely in environment variables)
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
@@ -14,26 +15,46 @@ const LoginController = {
       return res.status(400).json({ message: "Username and password are required" });
     }
 
-    // Find user by username
+    // Try to find the user first in the systemadmin table
     LoginModel.findUserByUsername(username, async (err, results) => {
       if (err) {
         console.error("Error fetching user:", err);
         return res.status(500).json({ message: "Database error" });
       }
 
-      if (results.length === 0) {
-        return res.status(404).json({ message: "User not found" });
+      let user = results[0];
+
+      // If no admin found, try to find the supplier
+      if (!user) {
+        LoginModel.findSupplierByName(username, async (err, supplierResults) => {
+          if (err) {
+            console.error("Error fetching supplier:", err);
+            return res.status(500).json({ message: "Database error" });
+          }
+
+          user = supplierResults[0];
+
+          if (!user) {
+            return res.status(404).json({ message: "User not found" });
+          }
+
+          await processLogin(user, password, res);
+        });
+      } else {
+        await processLogin(user, password, res);
       }
+    });
 
-      const user = results[0];
-
+    // Function to handle common login logic for both admin and supplier
+    const processLogin = async (user, password, res) => {
       // Verify password
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         return res.status(401).json({ message: "Invalid password" });
       }
+
       if (user.status === "deactivated") {
-        return res.status(401).json({ message: " inactive" });
+        return res.status(401).json({ message: "Account is inactive" });
       }
 
       // Check if it's the first login
@@ -47,7 +68,7 @@ const LoginController = {
 
       // Generate JWT
       const token = jwt.sign(
-        { userID: user.userID, role: user.role },
+        { userID: user.userID, role: user.role ,supplierID: user.supplierID},
         JWT_SECRET,
         { expiresIn: "1h" }
       );
@@ -57,10 +78,11 @@ const LoginController = {
         admin: "/admin/dashboard",
         user: "/user/home",
         manager: "/manager/overview",
+        supplier: "/supplier/dashboard", // Add redirect for suppliers
       };
       const redirectPage = roleRoutes[user.role] || "/";
 
-      // Success response
+      // Success response with consistent data for all users (admin, user, supplier)
       res.status(200).json({
         message: "Login successful",
         token,
@@ -70,9 +92,12 @@ const LoginController = {
           name: user.name,
           email: user.email,
           role: user.role,
+          supplierID: user.supplierID, 
+          supplierName: user.supplierName,
+         
         },
       });
-    });
+    };
   },
 
   // Controller method to update the password

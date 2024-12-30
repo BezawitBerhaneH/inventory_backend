@@ -15,4 +15,5 @@ router.post('/purchase-request', purchaseRequestController.createRequest);
 router.get('/pendingRequests', purchaseRequestController.getPendingRequests);
 // Route for fetching purchase requests by the current department user
 router.get("/department", purchaseRequestController.getRequestsByDepartment);
+
 module.exports = router;

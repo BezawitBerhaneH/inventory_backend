@@ -24,7 +24,7 @@ const PurchaseRequest = sequelize.define('PurchaseRequest', {
     type: DataTypes.INTEGER,
     allowNull: true, // Null initially until a supplier is chosen
   },
-  Note: {
+  note: {
     type: DataTypes.TEXT,
     allowNull: true, // Null initially until a supplier is chosen
   },

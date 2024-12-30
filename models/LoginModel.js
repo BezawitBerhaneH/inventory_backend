@@ -1,10 +1,18 @@
 const db = require('./db'); // Assuming db is set up to connect to MySQL with Sequelize
 
 const LoginModel = {
-  // Find a user by username
+  // Find a user by username (for system admin)
   findUserByUsername: (username, callback) => {
     const sql = "SELECT * FROM systemadmin WHERE username = ?";
     db.query(sql, { replacements: [username], type: db.QueryTypes.SELECT })
+      .then(results => callback(null, results))
+      .catch(err => callback(err, null));
+  },
+
+  // Find a supplier by name
+  findSupplierByName: (supplierName, callback) => {
+    const sql = "SELECT * FROM suppliers WHERE supplierName = ?";
+    db.query(sql, { replacements: [supplierName], type: db.QueryTypes.SELECT })
       .then(results => callback(null, results))
       .catch(err => callback(err, null));
   },

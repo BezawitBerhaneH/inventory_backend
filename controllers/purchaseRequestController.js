@@ -1,6 +1,5 @@
+const PurchaseOrder = require("../models/PurchaseOrder");
 const purchaseRequestModel = require("../models/purchaseRequestModel");
-
-
 const { authMiddleware } = require("./LoginController");
 
 const purchaseRequestController = {
@@ -42,6 +41,8 @@ const purchaseRequestController = {
       res.status(200).json({ purchaseRequests: results });
     });
   }],
+
+  // Get pending purchase requests (only for procurement officers)
   getPendingRequests: [authMiddleware, (req, res) => {
     if (req.user.role !== "procurement officer") {
       return res.status(403).json({ message: "Forbidden" });
@@ -58,6 +59,7 @@ const purchaseRequestController = {
     });
   }],
 
+  // Approve a purchase request (only for procurement officers)
   approveRequest: [authMiddleware, async (req, res) => {
     if (req.user.role !== "procurement officer") {
       return res.status(403).json({ message: "Forbidden" });
@@ -86,17 +88,20 @@ const purchaseRequestController = {
         return res.status(404).json({ message: "Request not found or already approved" });
       }
 
-      res.status(200).json({ message: "Request approved and associated with supplier successfully" });
+      // Create a purchase order after approving the request
+      const purchaseOrder = await PurchaseOrder.create({
+        requestID,
+        supplierID,
+        note,
+        status: 'pending', // Initial status can be 'pending' or any other appropriate status
+      });
+
+      res.status(200).json({ message: "Request approved and associated with supplier successfully", purchaseOrder });
     } catch (err) {
       console.error("Error approving request:", err.message);
       res.status(500).json({ message: "Database error", error: err.message });
     }
   }],
-
-
-
-
-  
 
   // Decline a purchase request (only for procurement officers)
   declineRequest: [authMiddleware, (req, res) => {
@@ -123,25 +128,25 @@ const purchaseRequestController = {
       res.status(200).json({ message: "Request declined successfully" });
     });
   }],
-    // Get purchase requests for a specific department (only for department users)
-    getRequestsByDepartment: [authMiddleware, (req, res) => {
-      if (req.user.role !== "department") {
-        return res.status(403).json({ message: "Forbidden" });
-      }
-  
-      const userID = req.user.userID; // Extract the userID from the token
-  
-      purchaseRequestModel.getRequestsByUser(userID, (err, results) => {
-        if (err) {
-          console.error("Error fetching department requests:", err.message);
-          return res.status(500).json({ message: "Database error", error: err.message });
-        }
-  
-        res.status(200).json({ departmentRequests: results });
-      });
-    }],
-  
-};
 
+  // Get purchase requests for a specific department (only for department users)
+  getRequestsByDepartment: [authMiddleware, (req, res) => {
+    if (req.user.role !== "department") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const userID = req.user.userID; // Extract the userID from the token
+
+    purchaseRequestModel.getRequestsByUser(userID, (err, results) => {
+      if (err) {
+        console.error("Error fetching department requests:", err.message);
+        return res.status(500).json({ message: "Database error", error: err.message });
+      }
+
+      res.status(200).json({ departmentRequests: results });
+    });
+  }],
+ 
+};
 
 module.exports = purchaseRequestController;
