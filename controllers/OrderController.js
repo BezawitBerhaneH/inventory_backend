@@ -27,17 +27,21 @@ const OrderController = {
   // Method to confirm the order and delivery information
   confirmOrder: async (req, res) => {
     try {
-      const { orderID, deliveryInfo } = req.body;
+      const { orderID, deliveryInfo, deliveryDate } = req.body;
       const supplierID = req.user?.supplierID;
 
       if (!supplierID) {
         return res.status(400).json({ message: "Supplier ID is required" });
       }
 
-      if (!orderID || !deliveryInfo) {
+      if (!orderID || !deliveryInfo ||!deliveryDate) {
         return res.status(400).json({ message: "Order ID and delivery information are required" });
       }
-
+ // Validate deliveryDate format (optional)
+ const isValidDate = !isNaN(Date.parse(deliveryDate));
+ if (!isValidDate) {
+   return res.status(400).json({ message: "Invalid delivery date format" });
+ }
       // Find the order
       const order = await PurchaseOrder.findOne({
         where: { orderID, supplierID },
@@ -49,6 +53,7 @@ const OrderController = {
 
       // Update order status and delivery info
       order.deliveryInfo = deliveryInfo;
+      order.deliveryDate = deliveryDate; // Save deliveryDate
       order.confirmed = true;  // Mark the order as confirmed by the supplier
       order.status = "confirmed";  // Change status to confirmed or any other suitable status
 

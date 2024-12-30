@@ -28,6 +28,10 @@ const PurchaseOrder = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    deliveryDate: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     note: {
         type: DataTypes.TEXT,
         allowNull: true, // Null initially until a supplier is chosen
