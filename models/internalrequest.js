@@ -19,7 +19,7 @@ const InternalRequest = sequelize.define(
     },
     requestedBy: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     status: {
       type: DataTypes.STRING,

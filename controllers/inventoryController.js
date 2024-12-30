@@ -1,8 +1,14 @@
 const Inventory = require("../models/inventoryModel");
 const InternalRequest = require("../models/internalrequest");
+const { authMiddleware } = require("./LoginController");
 
 const InventoryController = {
   getAll: async (req, res) => {
+    // Ensure the user has the correct role
+    if (req.user.role !== "inventory admin") {
+      return res.status(403).json({ message: "Forbidden: Admin access required" });
+    }
+
     try {
       const inventory = await Inventory.findAll({
         attributes: ["itemName", "quantity", "threshold"],
@@ -15,6 +21,11 @@ const InventoryController = {
   },
 
   add: async (req, res) => {
+    // Ensure the user has the correct role
+    if (req.user.role !== "inventory admin") {
+      return res.status(403).json({ message: "Forbidden: Admin access required" });
+    }
+
     const { itemName, quantity, typeID, threshold } = req.body;
     if (!itemName || !quantity || !typeID || threshold === undefined) {
       return res.status(400).json({ message: "All fields are required" });
@@ -34,58 +45,12 @@ const InventoryController = {
     }
   },
 
-  requestItem: async (req, res) => {
-    const { itemName, requestedQuantity } = req.body;
-
-    if (!itemName || !requestedQuantity || isNaN(requestedQuantity)) {
-      return res
-        .status(400)
-        .json({ message: "Item name and valid quantity are required" });
-    }
-
-    try {
-      // Log the user to debug authentication issues
-      console.log("Requesting user:", req.user);
-
-      // Ensure the user is authenticated
-      if (!req.user || !req.user.id) {
-        return res.status(401).json({ message: "User not authenticated" });
-      }
-
-      // Check if the item exists and has sufficient quantity
-      const inventoryItem = await Inventory.findOne({
-        where: { itemName },
-      });
-
-      if (!inventoryItem) {
-        return res
-          .status(404)
-          .json({ message: "Requested item is not available in inventory" });
-      }
-
-      if (inventoryItem.quantity < requestedQuantity) {
-        return res
-          .status(400)
-          .json({ message: "Insufficient quantity in inventory" });
-      }
-
-      // Create a request in the internal request table
-      const newRequest = await InternalRequest.create({
-        reqitem: itemName,
-        quantity: requestedQuantity,
-        requestedBy: req.user.id,
-      });
-
-      res
-        .status(201)
-        .json({ message: "Request submitted", requestID: newRequest.reqid });
-    } catch (err) {
-      console.error("Error requesting item:", err);
-      res.status(500).json({ message: "Error requesting item" });
-    }
-  },
-
   approveRequest: async (req, res) => {
+    // Ensure the user has the correct role
+    if (req.user.role !== "inventory admin") {
+      return res.status(403).json({ message: "Forbidden: Admin access required" });
+    }
+
     const { requestID } = req.params;
 
     try {
@@ -131,8 +96,14 @@ const InventoryController = {
   },
 
   updateThreshold: async (req, res) => {
+    // Ensure the user has the correct role
+    if (req.user.role !== "inventory admin") {
+      return res.status(403).json({ message: "Forbidden: Admin access required" });
+    }
+
     const { id } = req.params;
     const { threshold } = req.body;
+
     if (threshold === undefined || isNaN(threshold)) {
       return res.status(400).json({ message: "Valid threshold is required" });
     }
@@ -155,12 +126,62 @@ const InventoryController = {
   },
 
   getDashboardStats: async (req, res) => {
+    // Ensure the user has the correct role
+    if (req.user.role !== "inventory admin") {
+      return res.status(403).json({ message: "Forbidden: Admin access required" });
+    }
+
     try {
       const activeInventoryItems = await Inventory.count();
       res.json({ activeInventoryItems });
     } catch (err) {
       console.error("Error fetching dashboard stats:", err);
       res.status(500).json({ message: "Error fetching dashboard stats" });
+    }
+  },
+
+  requestItem: async (req, res) => {
+    // Ensure the user has the correct role
+    if (req.user.role !== "department") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const { itemName, requestedQuantity } = req.body;
+    const requestedBy = req.user.userID;
+
+    if (!itemName || !requestedQuantity || isNaN(requestedQuantity) || requestedQuantity <= 0) {
+      return res.status(400).json({ message: "Item name and a positive, valid quantity are required" });
+    }
+
+    try {
+      const inventoryItem = await Inventory.findOne({ where: { itemName } });
+
+      if (!inventoryItem) {
+        return res
+          .status(404)
+          .json({ message: `Item '${itemName}' not found in inventory` });
+      }
+
+      if (inventoryItem.quantity < requestedQuantity) {
+        return res.status(400).json({
+          message: `Insufficient quantity for '${itemName}'. Available: ${inventoryItem.quantity}`,
+        });
+      }
+
+      const newRequest = await InternalRequest.create({
+        reqitem: itemName,
+        quantity: requestedQuantity,
+        requestedBy,
+        status: "Pending",
+      });
+
+      res.status(201).json({
+        message: `Request for '${itemName}' submitted successfully`,
+        requestID: newRequest.reqid,
+      });
+    } catch (err) {
+      console.error("Error processing item request:", err);
+      res.status(500).json({ message: "Error processing item request" });
     }
   },
 };
