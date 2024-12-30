@@ -26,13 +26,13 @@ sequelize.sync().then(() => {
     where: { roleName: 'Admin' }, // Insert 'Admin' role if not present
   });
   Role.findOrCreate({
-    where: { roleName: 'Procurement Officer' }, // Insert 'Procurement Officer' role
+    where: { roleName: 'procurement officer' }, // Insert 'Procurement Officer' role
   });
   Role.findOrCreate({
-    where: { roleName: 'Department' }, // Insert 'Department' role
+    where: { roleName: 'department' }, // Insert 'Department' role
   });
   Role.findOrCreate({
-    where: { roleName: 'Inventory Admin' }, // Insert 'Inventory Admin' role
+    where: { roleName: 'inventory admin' }, // Insert 'Inventory Admin' role
   });
   Role.findOrCreate({
     where: { roleName: 'Inventory ' }, // Insert 'Inventory Admin' role
