@@ -36,7 +36,7 @@ const Inventory = sequelize.define(
 sequelize
   .sync({ alter: true }) // Updates table structure if necessary
   .then(() => {
-    console.log("Inventory table has been created or updated.");
+    console.log("");
   })
   .catch((err) => {
     console.error("Error syncing the Inventory model:", err);

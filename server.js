@@ -18,7 +18,7 @@ app.use(express.json());
 
 // Register routers
 app.use('/admin', systemAdminRouter);
-app.use('/inventory', inventoryRouter);
+app.use('/api', inventoryRouter);
 app.use("/api", loginRoutes);
 app.use("/api", purchaseRequestRoutes);
 app.use("/api", orderRoutes);  // Register the order routes
@@ -26,7 +26,7 @@ app.use("/api", orderRoutes);  // Register the order routes
 app.use('/api/roles', systemAdminRouter);
 
 // Start the server
-const PORT = 3000;
+const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

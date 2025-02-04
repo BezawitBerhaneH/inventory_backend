@@ -5,6 +5,9 @@ const sequelize = new Sequelize('IMS', 'root', '', {
   host: 'localhost',
   dialect: 'mysql',
   logging: false, // Disable SQL logging for cleaner output
+  dialectOptions: {
+    connectTimeout: 600000 // 10 seconds, adjust as needed
+  }
 });
 
 // Test the database connection

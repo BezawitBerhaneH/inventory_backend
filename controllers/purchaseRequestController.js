@@ -65,7 +65,7 @@ const purchaseRequestController = {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    const { requestID, supplierID, note } = req.body;
+    const { requestID, supplierID, note, itemDetails,quantity} = req.body;
 
     if (!requestID || !supplierID || !note) {
       return res.status(400).json({ message: "Request ID and Supplier ID are required" });
@@ -82,7 +82,7 @@ const purchaseRequestController = {
       }
 
       // Approve the request and associate it with the supplier
-      const [updatedRows] = await purchaseRequestModel.approveRequest(requestID, supplierID, note);
+      const [updatedRows] = await purchaseRequestModel.approveRequest(requestID, supplierID,itemDetails,quantity, note);
 
       if (updatedRows === 0) {
         return res.status(404).json({ message: "Request not found or already approved" });
@@ -92,6 +92,8 @@ const purchaseRequestController = {
       const purchaseOrder = await PurchaseOrder.create({
         requestID,
         supplierID,
+        itemDetails,
+        quantity,
         note,
         status: 'pending', // Initial status can be 'pending' or any other appropriate status
       });

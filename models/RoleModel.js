@@ -35,7 +35,7 @@ sequelize.sync().then(() => {
     where: { roleName: 'inventory admin' }, // Insert 'Inventory Admin' role
   });
   Role.findOrCreate({
-    where: { roleName: 'Inventory ' }, // Insert 'Inventory Admin' role
+    where: { roleName: 'quality inspector' }, // Insert 'Inventory Admin' role
   });
 });
 

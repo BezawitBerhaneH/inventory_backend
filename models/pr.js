@@ -38,7 +38,7 @@ const PurchaseRequest = sequelize.define('PurchaseRequest', {
 
 // Sync the model with the database
 sequelize.sync({ alter: true })
-  .then(() => console.log("PurchaseRequest table has been created or updated."))
+  .then(() => console.log(""))
   .catch((err) => console.error("Error syncing the model:", err));
 
 module.exports = PurchaseRequest;

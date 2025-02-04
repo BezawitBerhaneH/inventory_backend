@@ -46,7 +46,7 @@ const Supplier = sequelize.define(
 sequelize
   .sync({ alter: true }) // Use alter: true to update the table structure if needed
   .then(() => {
-    console.log('Supplier table has been created or updated.');
+    console.log('');
   })
   .catch((err) => {
     console.error('Error syncing the model:', err);

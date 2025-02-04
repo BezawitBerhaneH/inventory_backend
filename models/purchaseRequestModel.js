@@ -47,7 +47,7 @@ const PurchaseRequest = sequelize.define('PurchaseRequest', {
 });
 sequelize.sync({ alter: true }) 
 .then(() => {
-  console.log("pr table has been created or updated.");
+  console.log("");
 })
 .catch((err) => {
   console.error("Error syncing the model:", err);

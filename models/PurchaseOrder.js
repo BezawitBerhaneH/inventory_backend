@@ -15,6 +15,14 @@ const PurchaseOrder = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    itemDetails: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     date: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -32,6 +40,7 @@ const PurchaseOrder = sequelize.define(
         type: DataTypes.DATE,
         allowNull: true,
       },
+
     note: {
         type: DataTypes.TEXT,
         allowNull: true, // Null initially until a supplier is chosen
@@ -45,6 +54,23 @@ const PurchaseOrder = sequelize.define(
         type: DataTypes.BOOLEAN,
         defaultValue: false, // Supplier confirmation, default is false
       },
+      delivered: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false, 
+      },
+      qualityInspectionStatus: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'pending', // 'pending', 'approved', or 'rejected'
+      },
+      qualityInspectorID: {
+        type: DataTypes.INTEGER, // ID of the inspector handling this order
+        allowNull: true,
+      },
+      qualityInspectionNote: {
+        type: DataTypes.TEXT,
+        allowNull: true, // Notes from the inspector
+      },
   },
   {
     tableName: 'purchaseOrders',
@@ -54,9 +80,9 @@ const PurchaseOrder = sequelize.define(
 
 
 sequelize
-  .sync({ alter: true }) // Use alter: true to update the table structure if needed
+  .sync({ alter: true })
   .then(() => {
-    console.log('Supplier table has been created or updated.');
+    console.log('');
   })
   .catch((err) => {
     console.error('Error syncing the model:', err);

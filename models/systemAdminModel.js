@@ -58,7 +58,7 @@ const SystemAdmin = sequelize.define(
 // Sync the model with the database, creating the table if it doesn't exist
 sequelize.sync({ alter: true }) // Use alter: true to update the table structure if needed
   .then(() => {
-    console.log("SystemAdmin table has been created or updated.");
+    console.log("");
   })
   .catch((err) => {
     console.error("Error syncing the model:", err);

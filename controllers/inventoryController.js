@@ -1,6 +1,7 @@
 const Inventory = require("../models/inventoryModel");
 const InternalRequest = require("../models/internalrequest");
 const { authMiddleware } = require("./LoginController");
+const PurchaseOrder = require("../models/PurchaseOrder");
 
 const InventoryController = {
   getAll: async (req, res) => {
@@ -257,6 +258,74 @@ const InventoryController = {
       res.status(500).json({ message: "Error fetching inventory usage report" });
     }
   },
+ // Method to fetch orders for inspection
+ fetchOrdersForwarehouse: async (req, res) => {
+  if (req.user.role !== "warehouse") {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  try {
+    const orders = await PurchaseOrder.findAll({
+      where: { status:"ready_for_warehouse"  },
+    });
+
+    res.status(200).json({
+      message: "items to be logged",
+      orders,
+    });
+  } catch (error) {
+    console.error("Error fetching items:", error);
+    res.status(500).json({ message: "An error occurred while fetching items" });
+  }
+},
+logItemsToInventory: async (req, res) => {
+  if (req.user.role !== "warehouse") {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+  const { orderID, deliveredQuantity } = req.body; // Expect orderID and deliveredQuantity in the request body
+
+  try {
+    const purchaseOrder = await PurchaseOrder.findByPk(orderID);
+
+    if (!purchaseOrder) {
+      return res.status(404).json({ message: "Purchase order not found" });
+    }
+
+    if (purchaseOrder.status !== "ready_for_warehouse") {
+      return res.status(400).json({ message: "Order is not ready for warehouse" });
+    }
+
+    // Check if item exists in inventory
+    let inventoryItem = await Inventory.findOne({
+      where: { itemName: purchaseOrder.itemDetails },
+    });
+
+    // If the item does not exist in inventory, create it
+    if (!inventoryItem) {
+      inventoryItem = await Inventory.create({
+        itemName: purchaseOrder.itemDetails,
+        quantity: deliveredQuantity,
+        typeID: 1, // Use appropriate typeID based on your system
+        threshold: 10, // Set threshold (could be dynamic or based on rules)
+      });
+
+      return res.status(201).json({ message: "New item added to inventory" });
+    }
+
+    // Update inventory with delivered quantity
+    inventoryItem.quantity += deliveredQuantity;
+    await inventoryItem.save();
+
+    // Mark the purchase order as delivered
+    purchaseOrder.status = "delivered";
+    await purchaseOrder.save();
+
+    res.json({ message: "Inventory updated successfully" });
+  } catch (err) {
+    console.error("Error processing delivered item:", err);
+    res.status(500).json({ message: "Error processing delivered item" });
+  }
+},
 };
 
 module.exports = InventoryController;

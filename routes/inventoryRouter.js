@@ -28,4 +28,9 @@ router.get("/status-distribution", authMiddleware, InventoryController.getInvent
 // New route to fetch inventory usage report (for reports)
 router.get("/usage-report", authMiddleware, InventoryController.getInventoryUsageReport);
 
+// Route for warehouse staff to fetch items into inventory
+router.get("/inventory/items", authMiddleware,  InventoryController.fetchOrdersForwarehouse);
+
+// Route to log items to the inventory
+router.post("/inventory/log", authMiddleware,InventoryController.logItemsToInventory);
 module.exports = router;
