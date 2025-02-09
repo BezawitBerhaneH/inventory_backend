@@ -83,10 +83,58 @@ const InventoryController = {
           .json({ message: "Insufficient inventory to approve request" });
       }
 
+      
+
+      request.status = "Approved";
+      await request.save();
+
+      res.json({ message: "Request status approved and inventory updated" });
+    } catch (err) {
+      console.error("Error approving request:", err);
+      res.status(500).json({ message: "Error approving request" });
+    }
+  },
+  processedreq: async (req, res) => {
+    // Ensure the user has the correct role
+    if (req.user.role !== "warehouse") {
+      return res.status(403).json({ message: "Forbidden: Admin access required" });
+    }
+
+    const { requestID } = req.params;
+
+    try {
+      const request = await InternalRequest.findByPk(requestID);
+
+      if (!request) {
+        return res.status(404).json({ message: "Request not found" });
+      }
+
+      if (request.status !== "Approved") {
+        return res
+          .status(400)
+          .json({ message: "Request is already approved or rejected" });
+      }
+
+      const inventoryItem = await Inventory.findOne({
+        where: { itemName: request.reqitem },
+      });
+
+      if (!inventoryItem) {
+        return res
+          .status(404)
+          .json({ message: "Inventory item not found for the request" });
+      }
+
+      if (inventoryItem.quantity < request.quantity) {
+        return res
+          .status(400)
+          .json({ message: "Insufficient inventory to approve request" });
+      }
+
       inventoryItem.quantity -= request.quantity;
       await inventoryItem.save();
 
-      request.status = "Approved";
+      request.status = "processed";
       await request.save();
 
       res.json({ message: "Request approved and inventory updated" });
@@ -317,7 +365,7 @@ logItemsToInventory: async (req, res) => {
     await inventoryItem.save();
 
     // Mark the purchase order as delivered
-    purchaseOrder.status = "delivered";
+    purchaseOrder.status = "loged";
     await purchaseOrder.save();
 
     res.json({ message: "Inventory updated successfully" });

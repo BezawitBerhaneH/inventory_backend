@@ -15,6 +15,9 @@ router.post("/request", authMiddleware, InventoryController.requestItem);
 
 // Route to approve a specific request
 router.post("/approve/:requestID", authMiddleware, InventoryController.approveRequest);
+// Route to approve a specific request
+router.post("/process/:requestID", authMiddleware, InventoryController.processedreq);
+
 
 // Route to update the threshold of an inventory item
 router.put("/threshold/:id", authMiddleware, InventoryController.updateThreshold);
